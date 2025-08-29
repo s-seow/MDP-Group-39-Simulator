@@ -31,6 +31,11 @@ const transformCoord = (x, y) => {
   return { x: 19 - y, y: x };
 };
 
+const CELL_SIZE_PX = 32; // This should match your cell's rendered size (w-8 h-8 means 32px by default for Tailwind)
+// const OFFSET_X = 25; // Offset for the Y-axis labels
+// const OFFSET_Y = 25; // Offset for the X-axis labels
+const GRID_DIMENSION = 20; // 20x20 grid
+
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
@@ -262,10 +267,6 @@ export default function Simulator() {
   const renderGrid = () => {
     // Initialize the empty rows array
     const rows = [];
-    const CELL_SIZE_PX = 32; // This should match your cell's rendered size (w-8 h-8 means 32px by default for Tailwind)
-    const OFFSET_X = 25; // Offset for the Y-axis labels
-    const OFFSET_Y = 25; // Offset for the X-axis labels
-    const GRID_SIZE = 20; // 20x20 grid
 
     const baseStyle = {
       width: 25,
@@ -285,7 +286,7 @@ export default function Simulator() {
     for (let i = 0; i < 20; i++) {
       const cells = [
         // Header cells
-        <td key={i} className="w-5 h-5 md:w-8 md:h-8">
+        <td key={i} className="w-8 h-8">
           <span className="text-sky-900 font-bold text-[0.6rem] md:text-base ">
             {19 - i}
           </span>
@@ -295,7 +296,6 @@ export default function Simulator() {
       for (let j = 0; j < 20; j++) {
         let foundOb = null;
         let foundRobotCell = null;
-        let isVisited = false; //
 
         for (const ob of obstacles) {
           const transformed = transformCoord(ob.x, ob.y);
@@ -312,14 +312,6 @@ export default function Simulator() {
               break;
             }
           }
-        }
-
-        if (!foundOb && !foundRobotCell) {
-            // Check if the cell has been visited by the robot
-            isVisited = visitedPath.some(step => {
-                const transformed = transformCoord(step.x, step.y);
-                return transformed.x === i && transformed.y === j;
-            });
         }
 
         if (foundOb) {
@@ -348,23 +340,19 @@ export default function Simulator() {
           if (foundRobotCell.d !== null) {
             cells.push(
               <td
-                className={`border w-5 h-5 md:w-8 md:h-8 ${
+                className={`border w-8 h-8 ${
                   foundRobotCell.s != -1 ? "bg-red-500" : "bg-yellow-300"
                 }`}
               />
             );
           } else {
             cells.push(
-              <td className="bg-green-600 border-white border w-5 h-5 md:w-8 md:h-8" />
+              <td className="bg-green-600 border-white border w-8 h-8" />
             );
           }
-        } else if (isVisited) {
-            cells.push(
-                <td className="bg-gray-400 border-white border w-5 h-5 md:w-8 md:h-8" />
-            );
         } else {
           cells.push(
-            <td className="border-black border w-5 h-5 md:w-8 md:h-8" />
+            <td className="border-black border w-8 h-8" />
           );
         }
       }
@@ -375,7 +363,7 @@ export default function Simulator() {
     const yAxis = [<td key={0} />];
     for (let i = 0; i < 20; i++) {
       yAxis.push(
-        <td className="w-5 h-5 md:w-8 md:h-8">
+        <td className="w-8 h-8">
           <span className="text-sky-900 font-bold text-[0.6rem] md:text-base ">
             {i}
           </span>
@@ -600,7 +588,7 @@ export default function Simulator() {
         </div>
       )}
       
-      <div style={{ position: 'relative', width: CELL_SIZE_PX * GRID_SIZE + OFFSET_X, height: CELL_SIZE_PX * GRID_SIZE + OFFSET_Y }}>
+      <div style={{ position: 'relative', width: CELL_SIZE_PX * (GRID_DIMENSION + 1), height: CELL_SIZE_PX * (GRID_DIMENSION + 1)}}>
         <table className="border-collapse border-none border-black ">
           <tbody>{renderGrid()}</tbody>
         </table>
@@ -608,35 +596,24 @@ export default function Simulator() {
           <svg
             style={{
               position: 'absolute',
-              top: OFFSET_Y, // Adjust SVG position to align with the actual grid cells
-              left: OFFSET_X, // Adjust SVG position to align with the actual grid cells
-              width: CELL_SIZE_PX * GRID_SIZE,
-              height: CELL_SIZE_PX * GRID_SIZE,
-              pointerEvents: 'none', // Allow clicks to pass through to the table
+              // The SVG should be offset by one cell size to align over the grid area
+              top: 0,
+              left: CELL_SIZE_PX,
+              // The SVG area covers the 20x20 grid itself
+              width: CELL_SIZE_PX * GRID_DIMENSION,
+              height: CELL_SIZE_PX * GRID_DIMENSION,
+              pointerEvents: 'none',
             }}
           >
             {visitedPath.slice(0, -1).map((point, index) => {
               const nextPoint = visitedPath[index + 1];
 
-              // Transform coordinates for SVG (0,0 is top-left, y increases downwards)
-              // Robot X,Y are 1-18 relative to a 20x20 grid
-              // So, map 0-19 to 0-19 on the visual grid.
-              // Also, robot coordinates are 0,0 bottom-left, grid is 0,0 top-left (after transformCoord)
-              // We need to transform the robot's logical (x,y) to screen (pixel) coordinates.
+              // Convert logical grid coordinates (0-19) to pixel coordinates for the SVG
+              const p1ScreenX = point.x * CELL_SIZE_PX + CELL_SIZE_PX / 2;
+              const p1ScreenY = (GRID_DIMENSION - 1 - point.y) * CELL_SIZE_PX + CELL_SIZE_PX / 2;
 
-              // Convert robot's logical (x,y) to grid (col, row)
-              // The `transformCoord` in renderGrid changes (robotX, robotY) to (19-robotY, robotX)
-              // So, if robot.x is 'x' and robot.y is 'y', after transformCoord it becomes (19-y, x)
-              // We need to reverse this: grid_row = 19 - robot.y, grid_col = robot.x
-              // So, robot.y = 19 - grid_row, robot.x = grid_col
-
-              // Calculate the center of the cell for drawing the line
-              // The robot's reported (x,y) is its center, so convert directly to grid cells
-              const p1ScreenX = point.x * CELL_SIZE_PX + (CELL_SIZE_PX / 2);
-              const p1ScreenY = (GRID_SIZE - 1 - point.y) * CELL_SIZE_PX + (CELL_SIZE_PX / 2); // Invert Y for SVG
-
-              const p2ScreenX = nextPoint.x * CELL_SIZE_PX + (CELL_SIZE_PX / 2);
-              const p2ScreenY = (GRID_SIZE - 1 - nextPoint.y) * CELL_SIZE_PX + (CELL_SIZE_PX / 2); // Invert Y for SVG
+              const p2ScreenX = nextPoint.x * CELL_SIZE_PX + CELL_SIZE_PX / 2;
+              const p2ScreenY = (GRID_DIMENSION - 1 - nextPoint.y) * CELL_SIZE_PX + CELL_SIZE_PX / 2;
 
               return (
                 <line
@@ -646,7 +623,7 @@ export default function Simulator() {
                   x2={p2ScreenX}
                   y2={p2ScreenY}
                   stroke="red" // Or any color you like
-                  strokeWidth="4"
+                  strokeWidth="3"
                   strokeLinecap="round"
                 />
               );
