@@ -32,8 +32,7 @@ const transformCoord = (x, y) => {
 };
 
 const CELL_SIZE_PX = 32; // This should match your cell's rendered size (w-8 h-8 means 32px by default for Tailwind)
-// const OFFSET_X = 25; // Offset for the Y-axis labels
-// const OFFSET_Y = 25; // Offset for the X-axis labels
+
 const GRID_DIMENSION = 20; // 20x20 grid
 
 function classNames(...classes) {
@@ -379,18 +378,6 @@ export default function Simulator() {
     setRobotState(path[page]);
   }, [page, path]); // This effect runs when page changes to update the robot state
 
-  /*
-  useEffect(() => {
-    // If a path exists, store all steps up to the current page
-    if (path.length > 0) {
-      setVisitedPath(path.slice(0, page + 1));
-    } else {
-      // Clear the visited path if the main path is reset
-      setVisitedPath([]);
-    }
-  }, [page, path]); // This effect runs when page or path changes to draw the moving path
-  */
-
   useEffect(() => {
     // If a path exists, store only the center (x, y) for each step up to the current page
     if (path.length > 0) {
@@ -400,6 +387,43 @@ export default function Simulator() {
       setVisitedPath([]);
     }
   }, [page, path]);
+
+  const generatePathD = (path, cellSize, gridDimension) => {
+    // 1. If the path is too short to draw, return nothing.
+    if (!path || path.length < 2) {
+      return "";
+    }
+
+    // 2. Convert all logical path points to screen pixel coordinates.
+    const screenPoints = path.map(point => ({
+      x: point.x * cellSize + cellSize / 2,
+      y: (gridDimension - 1 - point.y) * cellSize + cellSize / 2,
+    }));
+
+    // 3. Start the path 'd' string at the first point.
+    let d = `M ${screenPoints[0].x} ${screenPoints[0].y}`;
+
+    // 4. For every point in between, create a curve.
+    for (let i = 1; i < screenPoints.length - 1; i++) {
+      const p_prev = screenPoints[i-1];
+      const p_curr = screenPoints[i];
+      const p_next = screenPoints[i+1];
+
+      // Find the midpoints of the segments before and after the current point.
+      const midpoint1 = { x: (p_prev.x + p_curr.x) / 2, y: (p_prev.y + p_curr.y) / 2 };
+      const midpoint2 = { x: (p_curr.x + p_next.x) / 2, y: (p_curr.y + p_next.y) / 2 };
+      
+      // The path draws a line to the first midpoint...
+      d += ` L ${midpoint1.x} ${midpoint1.y}`;
+      // ...then a curve through the current point to the second midpoint.
+      d += ` Q ${p_curr.x} ${p_curr.y} ${midpoint2.x} ${midpoint2.y}`;
+    }
+
+    // 5. Finally, draw a straight line to the very last point in the path.
+    d += ` L ${screenPoints[screenPoints.length - 1].x} ${screenPoints[screenPoints.length - 1].y}`;
+    
+    return d;
+  };
 
   return (
     <div className="flex flex-col items-center justify-center">
@@ -605,29 +629,14 @@ export default function Simulator() {
               pointerEvents: 'none',
             }}
           >
-            {visitedPath.slice(0, -1).map((point, index) => {
-              const nextPoint = visitedPath[index + 1];
-
-              // Convert logical grid coordinates (0-19) to pixel coordinates for the SVG
-              const p1ScreenX = point.x * CELL_SIZE_PX + CELL_SIZE_PX / 2;
-              const p1ScreenY = (GRID_DIMENSION - 1 - point.y) * CELL_SIZE_PX + CELL_SIZE_PX / 2;
-
-              const p2ScreenX = nextPoint.x * CELL_SIZE_PX + CELL_SIZE_PX / 2;
-              const p2ScreenY = (GRID_DIMENSION - 1 - nextPoint.y) * CELL_SIZE_PX + CELL_SIZE_PX / 2;
-
-              return (
-                <line
-                  key={index}
-                  x1={p1ScreenX}
-                  y1={p1ScreenY}
-                  x2={p2ScreenX}
-                  y2={p2ScreenY}
-                  stroke="red" // Or any color you like
-                  strokeWidth="3"
-                  strokeLinecap="round"
-                />
-              );
-            })}
+            <path
+              d={generatePathD(visitedPath, CELL_SIZE_PX, GRID_DIMENSION)}
+              fill="none"
+              stroke="red"
+              strokeWidth="4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
           </svg>
         )}
       </div>
