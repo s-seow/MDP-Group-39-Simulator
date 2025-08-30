@@ -263,6 +263,14 @@ export default function Simulator() {
     setPage(0);
   };
 
+  const onSkipToStart = () => {
+    setPage(0);
+  };
+
+  const onSkipToEnd = () => {
+    setPage(path.length - 1);
+  };
+
   const renderGrid = () => {
     // Initialize the empty rows array
     const rows = [];
@@ -563,6 +571,27 @@ export default function Simulator() {
           <button
             className="btn btn-circle pt-2 pl-1"
             disabled={page === 0}
+            onClick={onSkipToStart}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M11 19l-7-7 7-7m8 14l-7-7 7-7"
+              />
+            </svg>
+          </button>
+
+          <button
+            className="btn btn-circle pt-2 pl-1"
+            disabled={page === 0}
             onClick={() => {
               setPage(page - 1);
             }}
@@ -606,6 +635,27 @@ export default function Simulator() {
                 strokeLinejoin="round"
                 strokeWidth="2"
                 d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"
+              />
+            </svg>
+          </button>
+
+          <button
+            className="btn btn-circle pt-2 pl-2"
+            disabled={page === path.length - 1}
+            onClick={onSkipToEnd}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M13 5l7 7-7 7M6 5l7 7-7 7"
               />
             </svg>
           </button>
