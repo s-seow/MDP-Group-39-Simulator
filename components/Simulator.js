@@ -56,6 +56,7 @@ export default function Simulator() {
   const [isComputing, setIsComputing] = useState(false);
   const [path, setPath] = useState([]);
   const [commands, setCommands] = useState([]);
+  const [movementDirections, setMovementDirections] = useState([]);
   const [page, setPage] = useState(0);
   const [visitedPath, setVisitedPath] = useState([]); // to draw the moving path
 
@@ -226,14 +227,26 @@ export default function Simulator() {
         setPath(data.data.path);
         // Set the commands
         const commands = [];
+        // Store movement direction
+        const movementDirections = [];
         for (let x of data.data.commands) {
           // If the command is a snapshot, skip it
           if (x.startsWith("SNAP")) {
             continue;
           }
           commands.push(x);
+
+          // Parse movement direction for the path
+          if (x.startsWith("FW")) {
+            movementDirections.push('FW');
+          } else if (x.startsWith("BW")) {
+            movementDirections.push('BW');
+          } else {
+            movementDirections.push(null); // No movement command for this step (e.g., BR, BL)
+          }
         }
         setCommands(commands);
+        setMovementDirections(movementDirections);
       }
       // Set computing to false, release the lock
       setIsComputing(false);
@@ -248,7 +261,9 @@ export default function Simulator() {
     setRobotState({ x: 1, y: 1, d: Direction.NORTH, s: -1 });
     setPath([]);
     setCommands([]);
+    setMovementDirections([]);
     setPage(0);
+    setVisitedPath([]);
     setObstacles([]);
   };
 
@@ -260,7 +275,9 @@ export default function Simulator() {
     setRobotState({ x: 1, y: 1, d: Direction.NORTH, s: -1 });
     setPath([]);
     setCommands([]);
+    setMovementDirections([]);
     setPage(0);
+    setVisitedPath([]);
   };
 
   const onSkipToStart = () => {
@@ -396,41 +413,66 @@ export default function Simulator() {
     }
   }, [page, path]);
 
-  const generatePathD = (path, cellSize, gridDimension) => {
-    // 1. If the path is too short to draw, return nothing.
+  const generatePathAndMarkers = (path, commands, cellSize, gridDimension, markerDensity = 0.5) => { // Added commands & markerDensity
     if (!path || path.length < 2) {
-      return "";
+      return { d: "", markers: [] };
     }
 
-    // 2. Convert all logical path points to screen pixel coordinates.
     const screenPoints = path.map(point => ({
       x: point.x * cellSize + cellSize / 2,
       y: (gridDimension - 1 - point.y) * cellSize + cellSize / 2,
     }));
 
-    // 3. Start the path 'd' string at the first point.
     let d = `M ${screenPoints[0].x} ${screenPoints[0].y}`;
+    const markers = []; // To store marker data
 
-    // 4. For every point in between, create a curve.
+    // Loop to draw main path (same as before) and gather marker points
     for (let i = 1; i < screenPoints.length - 1; i++) {
       const p_prev = screenPoints[i-1];
       const p_curr = screenPoints[i];
       const p_next = screenPoints[i+1];
 
-      // Find the midpoints of the segments before and after the current point.
       const midpoint1 = { x: (p_prev.x + p_curr.x) / 2, y: (p_prev.y + p_curr.y) / 2 };
       const midpoint2 = { x: (p_curr.x + p_next.x) / 2, y: (p_curr.y + p_next.y) / 2 };
       
-      // The path draws a line to the first midpoint...
       d += ` L ${midpoint1.x} ${midpoint1.y}`;
-      // ...then a curve through the current point to the second midpoint.
       d += ` Q ${p_curr.x} ${p_curr.y} ${midpoint2.x} ${midpoint2.y}`;
     }
-
-    // 5. Finally, draw a straight line to the very last point in the path.
     d += ` L ${screenPoints[screenPoints.length - 1].x} ${screenPoints[screenPoints.length - 1].y}`;
-    
-    return d;
+
+    // Generate markers
+    // Iterate through path segments, not individual points, as commands refer to segments
+    for (let i = 0; i < screenPoints.length - 1; i++) {
+        const startPoint = screenPoints[i];
+        const endPoint = screenPoints[i + 1];
+        const command = commands[i]; // Get command for this segment
+
+        if (!command || (command !== 'FW' && command !== 'BW')) {
+            continue; // Only add markers for FW/BW movements
+        }
+
+        // Calculate a point along the segment for the marker
+        // You can adjust markerDensity to place markers closer or further apart
+        const markerPoint = {
+            x: startPoint.x + (endPoint.x - startPoint.x) * markerDensity,
+            y: startPoint.y + (endPoint.y - startPoint.y) * markerDensity,
+        };
+
+        // Calculate the angle of the segment for arrow rotation
+        var angle = Math.atan2(endPoint.y - startPoint.y, endPoint.x - startPoint.x) * 180 / Math.PI;
+        
+        if (command === 'BW') {
+          angle += 180; // Rotate 180 degrees for backward movement
+        }
+
+        markers.push({
+            point: markerPoint,
+            angle: angle,
+            direction: command // 'FW' or 'BW'
+        });
+    }
+
+    return { d, markers };
   };
 
   return (
@@ -679,14 +721,35 @@ export default function Simulator() {
               pointerEvents: 'none',
             }}
           >
-            <path
-              d={generatePathD(visitedPath, CELL_SIZE_PX, GRID_DIMENSION)}
-              fill="none"
-              stroke="red"
-              strokeWidth="4"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
+            {(() => {
+              const { d, markers } = generatePathAndMarkers(
+                visitedPath,
+                movementDirections, // Pass the movementDirections array
+                CELL_SIZE_PX,
+                GRID_DIMENSION
+              );
+              return (
+                <>
+                  <path
+                    d={d}
+                    fill="none"
+                    stroke="red"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+
+                  {markers.map((marker, index) => (
+                    <polygon
+                      key={`marker-${index}`}
+                      points="-8,8 12,0 -8,-8" // Small triangle pointing right (local coordinates)
+                      fill={marker.direction === 'FW' ? 'green' : 'blue'} // Green for FW, Blue for BW
+                      transform={`translate(${marker.point.x}, ${marker.point.y}) rotate(${marker.angle})`}
+                    />
+                  ))}
+                </>
+              );
+            })()}
           </svg>
         )}
       </div>
