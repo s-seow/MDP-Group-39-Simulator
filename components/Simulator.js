@@ -311,7 +311,7 @@ export default function Simulator() {
       const cells = [
         // Header cells
         <td key={i} className="w-8 h-8">
-          <span className="text-sky-900 font-bold text-[0.6rem] md:text-base ">
+          <span className="text-stone-800 font-bold text-[0.6rem] md:text-base">
             {19 - i}
           </span>
         </td>,
@@ -388,9 +388,10 @@ export default function Simulator() {
     for (let i = 0; i < 20; i++) {
       yAxis.push(
         <td className="w-8 h-8">
-          <span className="text-sky-900 font-bold text-[0.6rem] md:text-base ">
+          <span className="text-stone-800 font-bold text-[0.6rem] md:text-base">
             {i}
           </span>
+
         </td>
       );
     }
@@ -476,46 +477,58 @@ export default function Simulator() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center">
-      <div className="flex flex-col items-center text-center bg-sky-200 rounded-xl shadow-xl mb-8">
-        <h2 className="card-title text-black pt-4">Algorithm Simulator</h2>
-      </div>
+    
+    <div className="min-h-screen w-full bg-gradient-to-br from-stone-50 via-stone-100 to-amber-50 flex flex-col items-center justify-center">
 
-      <div className="flex flex-col items-center text-center bg-sky-200 rounded-xl shadow-xl">
+      <div className="flex flex-col items-center text-center bg-white/90 border border-stone-200 backdrop-blur-sm rounded-lg mb-8">
+
+        <h2 className="card-title text-stone-800 pt-2">Group 39 Algorithm Simulator</h2>
+
+      </div>
+    {/* --- Controls row wrapper (Robot Position + Add Obstacles) --- */}
+<div className="w-full max-w-4xl px-4 md:px-0 flex flex-col md:flex-row gap-6 md:items-start md:justify-center">
+
+      <div className="flex-1 flex flex-col items-center text-center bg-white/90 border border-stone-200 backdrop-blur-sm rounded-lg">
+
         <div className="card-body items-center text-center p-4">
-          <h2 className="card-title text-black">Robot Position</h2>
+          <h2 className="card-title text-stone-800">Add Robot Position</h2>
+
           <div className="form-control">
             <label className="input-group input-group-horizontal">
-              <span className="bg-primary p-2">X</span>
+              <span className="bg-emerald-600 text-white p-2">X</span>
               <input
                 onChange={onChangeRobotX}
                 type="number"
                 placeholder="1"
                 min="1"
                 max="18"
-                className="input input-bordered  text-blue-900 w-20"
+                className="input input-bordered text-stone-900 w-20"
+
               />
-              <span className="bg-primary p-2">Y</span>
+              <span className="bg-emerald-600 text-white p-2">Y</span>
               <input
                 onChange={onChangeRobotY}
                 type="number"
                 placeholder="1"
                 min="1"
                 max="18"
-                className="input input-bordered  text-blue-900 w-20"
+                className="input input-bordered text-stone-900 w-20"
+
               />
-              <span className="bg-primary p-2">D</span>
+              <span className="bg-emerald-600 text-white p-2">D</span>
               <select
                 onChange={onRobotDirectionInputChange}
                 value={robotDir}
-                className="select text-blue-900 py-2 pl-2 pr-6"
+                className="select text-stone-900 py-2 pl-2 pr-6"
+
               >
                 <option value={ObDirection.NORTH}>Up</option>
                 <option value={ObDirection.SOUTH}>Down</option>
                 <option value={ObDirection.WEST}>Left</option>
                 <option value={ObDirection.EAST}>Right</option>
               </select>
-              <button className="btn btn-success p-2" onClick={onClickRobot}>
+              <button className="btn bg-emerald-600 hover:bg-emerald-700 text-white border-none rounded-md p-2" onClick={onClickRobot}>
+
                 Set
               </button>
             </label>
@@ -523,33 +536,38 @@ export default function Simulator() {
         </div>
       </div>
 
-      <div className="flex flex-col items-center text-center bg-sky-200 p-4 rounded-xl shadow-xl m-8">
-        <h2 className="card-title text-black pb-2">Add Obstacles</h2>
+      <div className="flex-1 flex flex-col items-center text-center bg-white/90 border border-stone-200 backdrop-blur-sm p-4 rounded-lg m-0">
+
+        <h2 className="card-title text-stone-800 pb-2">Add New Obstacles</h2>
+
         <div className="form-control">
           <label className="input-group input-group-horizontal">
-            <span className="bg-primary p-2">X</span>
+            <span className="bg-emerald-600 text-white p-2">X</span>
             <input
               onChange={onChangeX}
               type="number"
               placeholder="1"
               min="0"
               max="19"
-              className="input input-bordered  text-blue-900 w-20"
+              className="input input-bordered text-stone-900 w-20"
+
             />
-            <span className="bg-primary p-2">Y</span>
+            <span className="bg-emerald-600 text-white p-2">Y</span>
             <input
               onChange={onChangeY}
               type="number"
               placeholder="1"
               min="0"
               max="19"
-              className="input input-bordered  text-blue-900 w-20"
+              className="input input-bordered text-stone-900 w-20"
+
             />
-            <span className="bg-primary p-2">D</span>
+            <span className="bg-emerald-600 text-white p-2">D</span>
             <select
               onChange={onDirectionInputChange}
               value={directionInput}
-              className="select text-blue-900 py-2 pl-2 pr-6"
+              className="select text-stone-900 py-2 pl-2 pr-6"
+
             >
               <option value={ObDirection.NORTH}>Up</option>
               <option value={ObDirection.SOUTH}>Down</option>
@@ -557,13 +575,15 @@ export default function Simulator() {
               <option value={ObDirection.EAST}>Right</option>
               <option value={ObDirection.SKIP}>None</option>
             </select>
-            <button className="btn btn-success p-2" onClick={onClickObstacle}>
+            <button className="btn bg-emerald-600 hover:bg-emerald-700 text-white border-none rounded-md p-2" onClick={onClickObstacle}>
               Add
             </button>
           </label>
         </div>
       </div>
+</div>
 
+{/* --- End controls row wrapper --- */}
       <div className="grid grid-cols-4 gap-x-2 gap-y-4 items-center">
         {obstacles.map((ob) => {
           return (
@@ -596,28 +616,37 @@ export default function Simulator() {
           );
         })}
       </div>
-      <div className="btn-group btn-group-horizontal py-4">
-        <button className="btn btn-error" onClick={onResetAll}>
-          Reset All
+      <div className="btn-group btn-group-horizontal py-4 rounded-none">
+
+        <button className="btn bg-rose-600 hover:bg-rose-700 text-white border-none rounded-sm" onClick={onResetAll}>
+
+
+          Clear All
         </button>
-        <button className="btn btn-warning" onClick={onReset}>
-          Reset Robot
+        <button className="btn bg-amber-500 hover:bg-amber-600 text-white border-none rounded-sm" onClick={onReset}>
+
+
+          Clear Robot
         </button>
-        <button className="btn btn-success" onClick={compute}>
-          Submit
+        <button className="btn bg-emerald-600 hover:bg-emerald-700 text-white border-none rounded-sm" onClick={compute}>
+
+          Start
         </button>
       </div>
 
       {path.length > 0 && (
-        <div className="flex flex-row items-center text-center bg-sky-200 p-4 rounded-xl shadow-xl my-8">
+        <div className="flex flex-row items-center text-center bg-white/90 border border-stone-200 backdrop-blur-sm p-4 rounded-lg shadow-lg my-8">
+
           <button
-            className="btn btn-circle pt-2 pl-1"
+            className="btn btn-circle rounded-full bg-white/90 text-stone-700 border-2 border-stone-700 hover:bg-stone-100 hover:border-stone-800 hover:text-stone-900 disabled:opacity-50 disabled:border-stone-300 disabled:text-stone-300 shadow-none p-0"
+
             disabled={page === 0}
             onClick={onSkipToStart}
           >
+
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6"
+              className="h-5 w-5 block"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -632,15 +661,17 @@ export default function Simulator() {
           </button>
 
           <button
-            className="btn btn-circle pt-2 pl-1"
+            className="btn btn-circle rounded-full bg-white/90 text-stone-700 border-2 border-stone-700 hover:bg-stone-100 hover:border-stone-800 hover:text-stone-900 disabled:opacity-50 disabled:border-stone-300 disabled:text-stone-300 shadow-none p-0"
+
             disabled={page === 0}
             onClick={() => {
               setPage(page - 1);
             }}
           >
+
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6"
+              className="h-5 w-5 block"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -654,20 +685,24 @@ export default function Simulator() {
             </svg>
           </button>
 
-          <span className="mx-5 text-black">
+          <span className="mx-5 text-stone-800">
+
             Step: {page + 1} / {path.length}
           </span>
-          <span className="mx-5 text-black">{commands[page]}</span>
+          <span className="mx-5 text-stone-800">
+{commands[page]}</span>
           <button
-            className="btn btn-circle pt-2 pl-2"
+            className="btn btn-circle rounded-full bg-white/90 text-stone-700 border-2 border-stone-700 hover:bg-stone-100 hover:border-stone-800 hover:text-stone-900 disabled:opacity-50 disabled:border-stone-300 disabled:text-stone-300 shadow-none p-0"
+
             disabled={page === path.length - 1}
             onClick={() => {
               setPage(page + 1);
             }}
           >
+
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6"
+              className="h-5 w-5 block"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -682,13 +717,15 @@ export default function Simulator() {
           </button>
 
           <button
-            className="btn btn-circle pt-2 pl-2"
+            className="btn btn-circle rounded-full bg-white/90 text-stone-700 border-2 border-stone-700 hover:bg-stone-100 hover:border-stone-800 hover:text-stone-900 disabled:opacity-50 disabled:border-stone-300 disabled:text-stone-300 shadow-none p-0"
+
             disabled={page === path.length - 1}
             onClick={onSkipToEnd}
           >
+
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6"
+              className="h-5 w-5 block"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
