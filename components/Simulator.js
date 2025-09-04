@@ -584,14 +584,17 @@ export default function Simulator() {
 </div>
 
 {/* --- End controls row wrapper --- */}
-      <div className="grid grid-cols-4 gap-x-2 gap-y-4 items-center">
+      <div className="w-full max-w-4xl mx-auto px-4 md:px-0 mt-4 flex flex-wrap justify-center gap-3">
+
+
         {obstacles.map((ob) => {
           return (
             <div
-              key={ob}
-              className="badge flex flex-row text-black bg-sky-100 rounded-xl text-xs md:text-sm h-max border-cyan-500"
+              key={ob.id ?? `${ob.x}-${ob.y}-${ob.d}`}
+              className="flex items-start gap-3 text-emerald-900 bg-emerald-50 border border-emerald-500 rounded-md px-3 py-2 shadow-sm"
             >
-              <div flex flex-col>
+              <div className="flex flex-col text-xs md:text-sm leading-5">
+
                 <div>X: {ob.x}</div>
                 <div>Y: {ob.y}</div>
                 <div>D: {DirectionToString[ob.d]}</div>
@@ -601,7 +604,7 @@ export default function Simulator() {
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
-                  className="inline-block w-4 h-4 stroke-current"
+                  className="inline-block w-4 h-4 stroke-emerald-700 hover:stroke-emerald-900 cursor-pointer"
                   onClick={() => onRemoveObstacle(ob)}
                 >
                   <path
